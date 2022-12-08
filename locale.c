@@ -3133,6 +3133,7 @@ S_save_to_buffer(const char * string, const char **buf, Size_t *buf_size)
         *buf_size = string_size;
     }
 
+#    ifdef DEBUGGING
     {
         dTHX_DEBUGGING;
         DEBUG_Lv(PerlIO_printf(Perl_debug_log,
@@ -3142,8 +3143,6 @@ S_save_to_buffer(const char * string, const char **buf, Size_t *buf_size)
                           :_byte_dump_string((U8 *) string, strlen(string), 0)),
                           *buf));
     }
-
-#    ifdef DEBUGGING
 
     /* Catch glitches.  Usually this is because LC_CTYPE needs to be the same
      * locale as whatever is being worked on */
