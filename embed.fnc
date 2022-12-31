@@ -4386,6 +4386,9 @@ S	|const char *|find_locale_from_environment			\
 				|const unsigned int index
 #   endif /* ( defined(USE_POSIX_2008_LOCALE) && !defined(USE_QUERYLOCALE) ) \
              || defined(WIN32) */
+#   if defined(USE_THREAD_SAFE_LOCALE_EMULATION)
+S	|const char *|native_query_LC_ALL
+#   endif /* defined(USE_THREAD_SAFE_LOCALE_EMULATION) */
 #   if defined(WIN32)
 S	|const char *|win32_setlocale					\
 				|int category				\

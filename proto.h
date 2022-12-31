@@ -7155,6 +7155,12 @@ S_find_locale_from_environment(pTHX_ const unsigned int index);
 
 #   endif /* ( defined(USE_POSIX_2008_LOCALE) && !defined(USE_QUERYLOCALE) ) \
              || defined(WIN32) */
+#   if defined(USE_THREAD_SAFE_LOCALE_EMULATION)
+STATIC const char *
+S_native_query_LC_ALL(pTHX);
+#     define PERL_ARGS_ASSERT_NATIVE_QUERY_LC_ALL
+
+#   endif /* defined(USE_THREAD_SAFE_LOCALE_EMULATION) */
 #   if defined(WIN32)
 STATIC wchar_t *
 S_Win_byte_string_to_wstring(const UINT code_page, const char *byte_string);

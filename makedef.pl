@@ -466,6 +466,16 @@ unless ($define{USE_PL_CURLOCALES})
     );
 }
 
+# XXX on WIndows we always have = and no map
+unless (1)
+{
+    ++$skip{$_} foreach qw(
+        PL_map_LC_ALL_position_to_index
+        PL_LC_ALL_separator_string
+        PL_LC_ALL_separator_string_len
+    );
+}
+
 unless ($define{USE_PL_CUR_LC_ALL})
 {
     ++$skip{$_} foreach qw(

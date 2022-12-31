@@ -623,6 +623,9 @@ Perl_locale_panic(const char * msg,
 #  define querylocale_r(cat)        mortalized_pv_copy(setlocale_r(cat, NULL))
 #  define querylocale_c(cat)        querylocale_r(cat)
 #  define querylocale_i(i)          querylocale_c(categories[i])
+#  ifdef LC_ALL
+#    define native_query_LC_ALL()     querylocale_c(LC_ALL)
+#  endif
 
 #elif   defined(USE_LOCALE_THREADS)                 \
    && ! defined(USE_THREAD_SAFE_LOCALE)
@@ -661,6 +664,9 @@ S_less_dicey_setlocale_r(pTHX_ const int category, const char * locale)
 #  define querylocale_r(cat)  mortalized_pv_copy(setlocale_r(cat, NULL))
 #  define querylocale_c(cat)                   querylocale_r(cat)
 #  define querylocale_i(i)                     querylocale_r(categories[i])
+#  ifdef LC_ALL
+#    define native_query_LC_ALL()              querylocale_c(LC_ALL)
+#  endif
 
 STATIC void
 S_less_dicey_void_setlocale_i(pTHX_ const unsigned cat_index,
@@ -744,6 +750,9 @@ S_less_dicey_bool_setlocale_r(pTHX_ const int cat, const char * locale)
 #  define querylocale_i(i)      mortalized_pv_copy(my_querylocale_i(i))
 #  define querylocale_c(cat)    querylocale_i(cat##_INDEX_)
 #  define querylocale_r(cat)    querylocale_i(get_category_index(cat,NULL))
+#  ifdef LC_ALL
+#    define native_query_LC_ALL()  querylocale_c(LC_ALL)
+#  endif
 
 #  ifdef USE_QUERYLOCALE
 #    define isSINGLE_BIT_SET(mask) isPOWER_OF_2(mask)
@@ -2856,7 +2865,7 @@ Perl_setlocale(const int category, const char * locale)
             toggled = TRUE;
         }
 
-        retval = querylocale_c(LC_ALL);
+        retval = native_query_LC_ALL();
 
         if (toggled) {
             set_numeric_standard();
