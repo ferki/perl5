@@ -747,8 +747,8 @@ PERLVARI(I, cur_locale_obj, locale_t, NULL)
 #ifdef USE_PL_CURLOCALES
 
 /* This is the most number of categories we've encountered so far on any
- * platform */
-PERLVARA(I, curlocales, 13, const char *)
+ * platform.  Includes space for LC_ALL at the tail */
+PERLVARA(I, curlocales, PERL_LOCALE_CATEGORIES_ALL_COUNT_, const char *)
 
 #endif
 #ifdef USE_PL_CUR_LC_ALL

@@ -1251,9 +1251,11 @@ violations are fatal.
 #  else
 #    define PERL_DUMMY_TOD_             PERL_DUMMY_SYNTAX_
 #  endif
+#  define PERL_LOCALE_CATEGORIES_COUNT_ PERL_DUMMY_TOD_ + 1
 #  ifdef LC_ALL
-#    define LC_ALL_INDEX_               PERL_DUMMY_TOD_ + 1
+#    define LC_ALL_INDEX_               PERL_LOCALE_CATEGORIES_COUNT_
 #  endif
+#    define PERL_LOCALE_CATEGORIES_ALL_COUNT_  PERL_LOCALE_CATEGORIES_COUNT_ + 1
 
 /* =========================================================================
  * The defines from here to the following ===== line are unfortunately
