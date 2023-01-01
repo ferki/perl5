@@ -155,7 +155,10 @@ if (! $define{NO_LOCALE}) {
 
 # https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B#Internal_version_numbering
 my $cctype = $ARGS{CCTYPE} =~ s/MSVC//r;
-if ($define{USE_ITHREADS} && ! $define{NO_LOCALE_THREADS}) {
+if (   $define{USE_ITHREADS}
+    && $define{USE_LOCALE}
+    && ! $define{NO_LOCALE_THREADS})
+{
     $define{USE_LOCALE_THREADS} = 1;
 }
 
