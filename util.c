@@ -5197,6 +5197,8 @@ int
 Perl_my_snprintf(char *buffer, const Size_t len, const char *format, ...)
 {
     int retval = -1;
+    DECLARATION_FOR_LC_NUMERIC_MANIPULATION;
+    dTHX;
     va_list ap;
     PERL_ARGS_ASSERT_MY_SNPRINTF;
 #ifndef HAS_VSNPRINTF
@@ -5206,9 +5208,12 @@ Perl_my_snprintf(char *buffer, const Size_t len, const char *format, ...)
 #ifdef USE_QUADMATH
     {
         bool quadmath_valid = FALSE;
+
         if (quadmath_format_valid(format)) {
             /* If the format looked promising, use it as quadmath. */
+            STORE_LC_NUMERIC_SET_TO_NEEDED();
             retval = quadmath_snprintf(buffer, len, format, va_arg(ap, NV));
+            RESTORE_LC_NUMERIC();
             if (retval == -1) {
                 Perl_croak_nocontext("panic: quadmath_snprintf failed, format \"%s\"", format);
             }
@@ -5240,12 +5245,19 @@ Perl_my_snprintf(char *buffer, const Size_t len, const char *format, ...)
 
     }
 #endif
-    if (retval == -1)
+    if (retval == -1) {
+        STORE_LC_NUMERIC_SET_TO_NEEDED();
+
 #ifdef HAS_VSNPRINTF
         retval = vsnprintf(buffer, len, format, ap);
 #else
         retval = vsprintf(buffer, format, ap);
 #endif
+
+
+        RESTORE_LC_NUMERIC();
+    }
+
     va_end(ap);
     /* vsprintf() shows failure with < 0 */
     if (retval < 0
@@ -5283,33 +5295,49 @@ Perl_my_vsnprintf(char *buffer, const Size_t len, const char *format, va_list ap
     return 0;
 #else
     int retval;
-#ifdef NEED_VA_COPY
+    DECLARATION_FOR_LC_NUMERIC_MANIPULATION;
+    dTHX;
+
+#  ifdef NEED_VA_COPY
     va_list apc;
 
     PERL_ARGS_ASSERT_MY_VSNPRINTF;
     Perl_va_copy(ap, apc);
-# ifdef HAS_VSNPRINTF
+
+    STORE_LC_NUMERIC_SET_TO_NEEDED();
+
+#   ifdef HAS_VSNPRINTF
     retval = vsnprintf(buffer, len, format, apc);
-# else
+#    else
     PERL_UNUSED_ARG(len);
     retval = vsprintf(buffer, format, apc);
-# endif
+#    endif
+
+    RESTORE_LC_NUMERIC();
+
     va_end(apc);
-#else
-# ifdef HAS_VSNPRINTF
+#  else
+
+    STORE_LC_NUMERIC_SET_TO_NEEDED();
+
+#    ifdef HAS_VSNPRINTF
     retval = vsnprintf(buffer, len, format, ap);
-# else
+#    else
     PERL_UNUSED_ARG(len);
     retval = vsprintf(buffer, format, ap);
-# endif
-#endif /* #ifdef NEED_VA_COPY */
+#    endif
+
+    RESTORE_LC_NUMERIC();
+
+#  endif /* #ifdef NEED_VA_COPY */
+
     /* vsprintf() shows failure with < 0 */
     if (retval < 0
-#ifdef HAS_VSNPRINTF
+#  ifdef HAS_VSNPRINTF
     /* vsnprintf() shows failure with >= len */
         ||
         (len > 0 && (Size_t)retval >= len)
-#endif
+#  endif
     )
         Perl_croak_nocontext("panic: my_vsnprintf buffer overflow");
     return retval;
@@ -6154,8 +6182,13 @@ static void atos_symbolize(atos_context* ctx,
             return;
         }
     }
+
+    DECLARATION_FOR_LC_NUMERIC_MANIPULATION;
+    STORE_LC_NUMERIC_SET_TO_NEEDED();
     cnt = snprintf(cmd, sizeof(cmd), ctx->format,
                    ctx->fname, ctx->object_base_addr, raw_frame);
+    RESTORE_LC_NUMERIC();
+
     if (cnt < sizeof(cmd)) {
         /* Undo nostdio.h #defines that disable stdio.
          * This is somewhat naughty, but is used elsewhere

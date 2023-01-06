@@ -1459,8 +1459,9 @@ SKIP: {
 
         } # End of setup() definition
 
-        my \$future = (  1         # overhead insurance
-                       + $thread_count * $per_thread_startup);
+        my \$startup_insurance = 1;
+        my \$future = \$startup_insurance
+                    + $thread_count * $per_thread_startup;
         my \$starting_time = time() + \$future;
 
         sub wait_until_time {
@@ -1470,14 +1471,17 @@ SKIP: {
             my \$sleep_time = (\$starting_time - time());
             #printf STDERR \"thread %d started, sleeping %g sec\\n\",
             #              threads->tid, \$sleep_time;
-            if (\$sleep_time < 0) {
-                if ($die_on_negative_sleep) {
-                    printf STDERR '\\\$per_thread_startup would need to be '
-                                . \"%g for thread %d to have slept\n\",
-                                  (-\$sleep_time / $thread_count),
-                                  threads->tid;
-                    return;
-                }
+            if (\$sleep_time < 0 && $die_on_negative_sleep) {
+                # What the start time should have been
+                my \$a_better_future = \$future - \$sleep_time;
+
+                my \$better_per_thread =
+                    (\$a_better_future - \$startup_insurance) / $thread_count;
+                printf STDERR '\\\$per_thread_startup would need to be \"%g'
+                            . ' for thread %d to have started\nin sync with'
+                            . ' the other threads\n',
+                              \$better_per_thread, threads->tid;
+                die 'Thread started too late';
             }
             else {
                 usleep(\$sleep_time * 1_000_000) if \$sleep_time > 0;

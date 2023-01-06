@@ -7714,7 +7714,6 @@ Perl_my_strerror(pTHX_ const int errnum, utf8ness_t * utf8ness)
         SETLOCALE_UNLOCK;
 
         *utf8ness = UTF8NESS_IMMATERIAL;
-
     }
 
     DEBUG_STRERROR_RETURN(errstr, utf8ness);

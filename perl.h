@@ -2312,7 +2312,7 @@ my_snprintf()
 #define my_sprintf sprintf
 
 /*
- * If we have v?snprintf() and the C99 variadic macros, we can just
+ * If XXX we have v?snprintf() and the C99 variadic macros, we can just
  * use just the v?snprintf().  It is nice to try to trap the buffer
  * overflow, however, so if we are DEBUGGING, and we cannot use the
  * gcc statement expressions, then use the function wrappers which try
@@ -2329,7 +2329,10 @@ my_snprintf()
 
 #define PERL_SNPRINTF_CHECK(len, max, api) STMT_START { if ((max) > 0 && (Size_t)len > (max)) Perl_croak_nocontext("panic: %s buffer overflow", STRINGIFY(api)); } STMT_END
 
-#ifdef USE_QUADMATH
+#if defined(USE_THREADS)
+#  define my_snprintf Perl_my_snprintf
+#  define PERL_MY_SNPRINTF_GUARDED
+#elif defined(USE_QUADMATH)
 #  define my_snprintf Perl_my_snprintf
 #  define PERL_MY_SNPRINTF_GUARDED
 #elif defined(HAS_SNPRINTF) && defined(HAS_C99_VARIADIC_MACROS) && !(defined(DEBUGGING) && !defined(PERL_USE_GCC_BRACE_GROUPS)) && !defined(PERL_GCC_PEDANTIC)
