@@ -2329,7 +2329,7 @@ my_snprintf()
 
 #define PERL_SNPRINTF_CHECK(len, max, api) STMT_START { if ((max) > 0 && (Size_t)len > (max)) Perl_croak_nocontext("panic: %s buffer overflow", STRINGIFY(api)); } STMT_END
 
-#if defined(USE_THREADS)
+#if defined(USE_LOCALE_THREADS)
 #  define my_snprintf Perl_my_snprintf
 #  define PERL_MY_SNPRINTF_GUARDED
 #elif defined(USE_QUADMATH)

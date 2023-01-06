@@ -269,7 +269,7 @@ sub analyze_locale_name($) {
     # definition.)  So use it unconditionally when found.  But note any
     # discrepancy as an aid for improving this test.
     if ($langinfo_codeset) {
-        $langinfo_codeset =~ s/\b65001/\butf8/;     # Windows synonym
+        $langinfo_codeset =~ s/\b65001\b/utf8/;     # Windows synonym
         $langinfo_codeset =~ s/\b646\b/$official_ascii_name/;
         $langinfo_codeset =~ s/\busascii\b/$official_ascii_name/;
         if ($ret{codeset}) {

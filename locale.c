@@ -561,7 +561,7 @@ S_use_curlocale_scratch(pTHX)
     locale_t cur = uselocale((locale_t) 0);
 
     if (cur != LC_GLOBAL_LOCALE) {
-        DEBUG_L(PerlIO_printf(Perl_debug_log, "duplocale returned %p\n", cur));
+        DEBUG_L(PerlIO_printf(Perl_debug_log, "uselocale returned %p\n", cur));
         return cur;
     }
 
@@ -7801,7 +7801,17 @@ Perl_category_lock_i(pTHX_ unsigned int cat_index, const char * file, const line
     if (LIKELY(PL_perl_controls_locale)) {
 
         /* What locale we're supposed to be in */
+
+#ifdef USE_LOCALE_NUMERIC
+
+        const char * wanted = (   cat_index != LC_NUMERIC_INDEX_
+                               || NOT_IN_NUMERIC_STANDARD_)
+                              ? PL_curlocales[cat_index]
+                              : "C";
+
+#else
         const char * wanted = PL_curlocales[cat_index];
+#endif
         if (strchr(wanted, ';')) {
             locale_panic_(Perl_form(aTHX_ "%s: %d: trying to set %s to %s\n",
                                     file, line,
