@@ -8675,7 +8675,7 @@ S_regmatch(pTHX_ regmatch_info *reginfo, char *startpos, regnode *prog)
             break;
 
         case LOGICAL:  /* modifier for EVAL and IFMATCH */
-            logical = scan->flags;
+            logical = scan->flags & EVAL_FLAGS_MASK; /* reserve a bit for optimistic eval */
             break;
 
 /*******************************************************************

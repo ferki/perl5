@@ -1990,6 +1990,17 @@ keep track of the number of nested parentheses. For example:
   /the (\S+)(?{ $color = $^N }) (\S+)(?{ $animal = $^N })/i;
   print "color = $color, animal = $animal\n";
 
+The use of this construct disables some optimisations globally in the
+pattern, and the pattern may execute much slower as a consequence.
+Use a double block to create an optimistic form of this construct.
+C<(?{{ ... }})> should not disable any optimisations.
+
+=item C<(*{ I<code> })>
+X<(*{})> X<regex, optimistic code>
+
+This is *exactly* the same as C<(?{ I<code> })> with the exception
+that it does not disable any optimisations in the regex engine. How
+often it is executed may vary from perl release to perl release.
 
 =item C<(??{ I<code> })>
 X<(??{})>
@@ -2046,6 +2057,20 @@ Executing a postponed regular expression too many times without
 consuming any input string will also result in a fatal error.  The depth
 at which that happens is compiled into perl, so it can be changed with a
 custom build.
+
+The use of this construct disables some optimisations globally in the
+pattern, and the pattern may execute much slower as a consequence.
+Use a double block to create an optimistic form of this construct.
+Using C<(??{{ ... }})> as a replacement should not disable any
+optimisations, but is likely to be even more volatile from version to
+version.
+
+=item C<(**{ I<code> })>
+X<(**{})> X<regex, postponed optimistic>
+
+This is exactly the same as C<(??{ I<code> })> however it does not disable
+any optimisations. It is even more likely to change from version to version
+of perl. Introduced in 5.37.7.
 
 =item C<(?I<PARNO>)> C<(?-I<PARNO>)> C<(?+I<PARNO>)> C<(?R)> C<(?0)>
 X<(?PARNO)> X<(?1)> X<(?R)> X<(?0)> X<(?-1)> X<(?+1)> X<(?-PARNO)> X<(?+PARNO)>
@@ -3325,6 +3350,15 @@ example:
   "good" =~ /g(?:o(?{print "o"}))*d/;
 
 will output "o" twice.
+
+For historical and consistency reasons the use of normal code blocks
+anywhere in a pattern will disable certain optimisations. As of 5.37.7
+you can use an "optimistic" codeblock, C<(?{{ ... }})> or C<(??{{ ... }})>
+if you do *not* wish to disable these optimisations. This may result
+in code blocks being called less often than might have been had they
+not been optimistic. It is backwards compatible in that it is a no-op
+on perls that do not support optimistic eval, in which case perl will
+adopt the normal pessimistic behavior for historical consistency.
 
 =head2 PCRE/Python Support
 
