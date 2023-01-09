@@ -216,13 +216,13 @@ struct regnode_2L {
     I32 arg2;
 };
 
-/* 'Two field' -- Two 16 bit unsigned args */
+/* 'Two field' -- Two 32 bit signed args */
 struct regnode_2 {
     U8	flags;
     U8  type;
     U16 next_off;
-    U16 arg1;
-    U16 arg2;
+    I32 arg1;
+    I32 arg2;
 };
 
 #define REGNODE_BBM_BITMAP_LEN                                                  \
@@ -327,12 +327,12 @@ struct regnode_ssc {
 */
 #if SHORTSIZE > 2
 #  ifndef REG_INFTY
-#    define REG_INFTY  nBIT_UMAX(16)
+#    define REG_INFTY  nBIT_IMAX(32)
 #  endif
 #endif
 
 #ifndef REG_INFTY
-#  define REG_INFTY U16_MAX
+#  define REG_INFTY I32_MAX
 #endif
 
 #define ARG_VALUE(arg) (arg)
