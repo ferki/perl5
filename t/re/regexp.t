@@ -144,7 +144,7 @@ $nulnul = "\0" x 2;
 my $OP = $qr ? 'qr' : 'm';
 
 $| = 1;
-
+$::normalize_pat = $::normalize_pat; # silence warning
 TEST:
 foreach (@tests) {
     $test_num++;
@@ -186,6 +186,18 @@ foreach (@tests) {
     my $todo_qr = $qr_embed_thr && ($result =~ s/t//);
     my $skip = ($skip_amp ? ($result =~ s/B//i) : ($result =~ s/B//));
     ++$skip if $result =~ s/M// && !defined &DynaLoader::boot_DynaLoader;
+    if ($::normalize_pat) {
+        my $opat= $pat;
+        # Convert (x)? to (?:(x)|) and (x)+ to (?:(x))+ and (x)* to (?:(x))*
+        $pat =~ s/\(([\w|.]+)\)\?(?![+*?])/(?:($1)|)/g;
+        $pat =~ s/\(([\w|.]+)\)([+*])(?![+*?])/(?:($1))$2/g;
+        if ($opat eq $pat) {
+            # we didn't change anything, no point in testing it again.
+            $skip++;
+            $reason = "Test not valid for $0";
+        }
+    }
+
     if ($result =~ s/ ( [Ss] ) //x) {
         if (($1 eq 'S' && $regex_sets) || ($1 eq 's' && ! $regex_sets)) {
             $skip++;
