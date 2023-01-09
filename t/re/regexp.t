@@ -186,17 +186,6 @@ foreach (@tests) {
     my $todo_qr = $qr_embed_thr && ($result =~ s/t//);
     my $skip = ($skip_amp ? ($result =~ s/B//i) : ($result =~ s/B//));
     ++$skip if $result =~ s/M// && !defined &DynaLoader::boot_DynaLoader;
-    if ($::normalize_pat) {
-        my $opat= $pat;
-        # Convert (x)? to (?:(x)|) and (x)+ to (?:(x))+ and (x)* to (?:(x))*
-        $pat =~ s/\(([\w|.]+)\)\?(?![+*?])/(?:($1)|)/g;
-        $pat =~ s/\(([\w|.]+)\)([+*])(?![+*?])/(?:($1))$2/g;
-        if ($opat eq $pat) {
-            # we didn't change anything, no point in testing it again.
-            $skip++;
-            $reason = "Test not valid for $0";
-        }
-    }
 
     if ($result =~ s/ ( [Ss] ) //x) {
         if (($1 eq 'S' && $regex_sets) || ($1 eq 's' && ! $regex_sets)) {
@@ -433,9 +422,28 @@ foreach (@tests) {
             $pat = $modified;
         }
     }
+    if ($::normalize_pat){
+        if (!$skip && ($result eq "y" or $result eq "n")) {
+            my $opat= $pat;
+            # Convert (x)? to (?:(x)|) and (x)+ to (?:(x))+ and (x)* to (?:(x))*
+            $pat =~ s/\(([\w|.]+)\)\?(?![+*?])/(?:($1)|)/g;
+            $pat =~ s/\(([\w|.]+)\)([+*])(?![+*?])/(?:($1))$2/g;
+            # inject an EVAL into the front of the pattern.
+            # this should disable all optimizations.
+            $pat =~ s/\A(.)/$1(?{ \$the_counter++ })/
+                or die $pat;
+        } elsif (!$skip) {
+            $skip = $reason = "Test not applicable to $0";
+        }
+    }
 
     for my $study ('', 'study $subject;', 'utf8::upgrade($subject);',
 		   'utf8::upgrade($subject); study $subject;') {
+        if ( $skip ) {
+            print "ok $testname # skipped", length($reason) ? ".  $reason" : '', "\n";
+            next TEST;
+        }
+        our $the_counter = 0; # used in normalization tests
 	# Need to make a copy, else the utf8::upgrade of an already studied
 	# scalar confuses things.
 	my $subject = $subject;
@@ -498,11 +506,7 @@ EOFCODE
 	    eval $code;
 	}
 	chomp( my $err = $@ );
-	if ( $skip ) {
-	    print "ok $testname # skipped", length($reason) ? ".  $reason" : '', "\n";
-	    next TEST;
-	}
-	elsif ($result eq 'c') {
+	if ($result eq 'c') {
 	    if ($err !~ m!^\Q$expect!) { print "not ok $testname$todo (compile) $input => '$err'\n"; next TEST }
 	    last;  # no need to study a syntax error
 	}
