@@ -7996,14 +7996,16 @@ S_regmatch(pTHX_ regmatch_info *reginfo, char *startpos, regnode *prog)
             if (rex->logical_to_parno) {
                 n = rex->logical_to_parno[n];
                 do {
-                    if (rex->lastparen < n || rex->offs[n].start == -1 || rex->offs[n].end == -1) {
+                    if (rex->lastparen < n || RXp_OFFS_START(rex,n) == -1 || RXp_OFFS_END(rex,n) == -1) {
                         n = rex->parno_to_logical_next[n];
                     }
                     else {
                         break;
                     }
                 } while(n);
-                if (!n) sayNO;
+                
+                if (!n) /* this means there is nothing that matched */
+                    sayNO;
             }
 
           do_nref_ref_common:
